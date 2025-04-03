@@ -54,6 +54,22 @@
   }
 }
 
+.sidebar-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Smooth transitions for dropdown */
+.transitions-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Prevent dropdown from causing scroll */
+.group:hover .group-hover\:visible {
+  visibility: visible;
+  opacity: 1;
+}
 
 .animate-fadeIn {
   animation: fadeIn 0.6s ease-out forwards;

@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $username = $conn->real_escape_string($data['username']);
 
-        // Get user with prepared statement
-        $stmt = $conn->prepare("SELECT idno, username, password FROM users WHERE username = ?");
+        // Get user with prepared statement (now including role)
+        $stmt = $conn->prepare("SELECT idno, username, password, role FROM users WHERE username = ?");
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -52,13 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Invalid password");
         }
 
-        // Login successful
+        // Login successful - include role in response
         echo json_encode([
             'success' => true,
             'message' => 'Login successful',
             'user' => [
                 'idno' => $user['idno'],
-                'username' => $user['username']
+                'username' => $user['username'],
+                'role' => $user['role'] // Include the role in response
             ]
         ]);
 

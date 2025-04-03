@@ -1,15 +1,22 @@
 <?php
-$servername = "localhost"; // Server is localhost
-$username = "root";        // Default username for local MySQL (XAMPP/WAMP)
-$password = "";            // Default password for local MySQL (often empty in XAMPP)
-$dbname = "sysarch";       // Your database name
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "sysarch";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Return JSON error instead of plain text
+    header("Content-Type: application/json");
+    die(json_encode([
+        'success' => false,
+        'error' => 'Database connection failed: ' . $conn->connect_error
+    ]));
 }
-echo "Connected successfully";
+
+// Don't output any success message - just set charset
+$conn->set_charset("utf8mb4");
 ?>

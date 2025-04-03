@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
-
+import { useAuth } from '../context/auth-context';  // Add this import
 
 
 export default function AuthForm() {
   const [isRegistering, setIsRegistering] = useState(false); // State to manage form type
   const [showContent, setShowContent] = useState(false); // State to manage content change delay
   const [inputs, setInputs] = useState({});
+  const { login } = useAuth(); 
   let navigate = useNavigate();
   const handleChange = (event) => {
     const { name, value } = event.target; // Extracting name and value from input
@@ -18,88 +19,9 @@ export default function AuthForm() {
   };
 
   const handleLogin = async (event) => {
-  event.preventDefault();
-
-  // Show loading alert
-  const loadingAlert = Swal.fire({
-    title: 'Logging in...',
-    allowOutsideClick: false,
-    didOpen: () => Swal.showLoading()
-  });
-
-  try {
-    const response = await fetch(
-      "http://localhost/sysarch_reboot/sysarch_php/login.php",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inputs),
-      }
-    );
-
-    const responseText = await response.text();
-    let result;
-    
-    try {
-      result = JSON.parse(responseText);
-    } catch (e) {
-      throw new Error("Invalid server response");
-    }
-
-    if (!response.ok || !result.success) {
-      throw new Error(result.error || "Login failed");
-    }
-
-    // Success case
-    setTimeout(async () => {
-      await Swal.fire({
-        title: 'Success!',
-        text: result.message || "Login successful!",
-        icon: 'success',
-        confirmButtonColor: '#3085d6',
-        timer: 1000
-      });
-    }, 1000); // Delay of 1 second
-    
-    
-    // Store user data if needed
-    if (result.user) {
-      localStorage.setItem('user', JSON.stringify(result.user));
-    }
-    localStorage.setItem('user', JSON.stringify({
-      idno: result.user.idno,
-      username: result.user.username,
-      // Add any other user data you want to store
-    }));
-    
-    // Delay redirection to match the success message display time (e.g., 3 seconds)
-    setTimeout(() => {
-      navigate("/student/dashboard");
-    }, 2000); // Adjust the delay to match your desired timing
-    
-
-  } catch (error) {
-    let errorMessage = error.message;
-    
-    // Customize specific error messages
-    if (error.message.includes("User not found")) {
-      errorMessage = "Account not found. Please check your username";
-    } else if (error.message.includes("Invalid password")) {
-      errorMessage = "Incorrect password. Please try again";
-    }
-    
-    setTimeout(async () => {
-      await Swal.fire({
-        title: 'Login Failed',
-        text: errorMessage,
-        icon: 'error',
-        confirmButtonColor: '#d33'
-      });
-    }, 1000); // Delay of 1 second
-  } finally {
-    setTimeout(() => loadingAlert.close(), 1000); // Ensure loading spinner remains visible during the delay
-  }
-};
+    event.preventDefault();
+    await login(inputs); // All logic is now handled in auth context
+  };
 
 const handleSubmit = async (event) => {
   event.preventDefault();
@@ -209,11 +131,12 @@ const handleSubmit = async (event) => {
   };
 
   return (
-    
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="bg-blue-500">
+    <div className="ml-10 min-h-screen flex items-center justify-center bg-gray-100">
+      
       {/* Main container */}
       <div
-        className="relative w-full max-w-5xl min-h-[400px] bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-700 flex"
+        className="relative w-screen max-w-5xl min-h-[400px] bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-700 flex"
         style={{ minHeight: "500px", height: "auto" }}
       >
         {/* Login/Register Forms */}
@@ -547,6 +470,7 @@ const handleSubmit = async (event) => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
