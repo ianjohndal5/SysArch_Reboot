@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { 
   FiSearch, 
-  FiFilter,
-  FiCalendar,
-  FiCheckCircle,
-  FiXCircle,
   FiChevronLeft,
   FiChevronRight,
   FiEye,
@@ -166,32 +162,85 @@ function AdminSitinfeedbacks() {
   };
 
   const exportToExcel = (data) => {
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Feedback Reports");
-    XLSX.writeFile(workbook, "feedback-reports.xlsx");
-  };
-
-  const exportToPDF = (data) => {
-    const doc = new jsPDF();
-    
-    // Prepare headers and data
-    const headers = [Object.keys(data[0])];
-    const rows = data.map(item => Object.values(item));
-    
-    // Add title
-    doc.text('Feedback Reports', 14, 15);
-    
-    // Add table
-    autoTable(doc, {
-      head: headers,
-      body: rows,
-      startY: 20,
-      styles: { fontSize: 8 }
-    });
-    
-    doc.save('feedback-reports.pdf');
-  };
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      
+      // Header text with smaller font
+      const headerText = [
+        "University of Cebu-Main", 
+        "College of Computer Studies", 
+        "Computer Laboratory Sitin Monitoring System Report"
+      ];
+      
+      // Insert header rows
+      XLSX.utils.sheet_add_aoa(worksheet, [headerText], { origin: "A1" });
+      
+      // Merge header cells (A1 to last column)
+      if (!worksheet["!merges"]) worksheet["!merges"] = [];
+      const lastCol = XLSX.utils.encode_col(Object.keys(data[0]).length - 1);
+      worksheet["!merges"].push({ s: { r: 0, c: 0 }, e: { r: 2, c: lastCol.charCodeAt(0) - 65 } });
+      
+      // Apply smaller font size (10pt instead of default 12pt) and center alignment
+      for (let i = 0; i < 3; i++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: i, c: 0 });
+        worksheet[cellAddress].s = {
+          alignment: { horizontal: "center", vertical: "center" },
+          font: { 
+            bold: true,
+            sz: 10 // Smaller font size (10pt)
+          }
+        };
+      }
+      
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+      XLSX.writeFile(workbook, "sit-in-reports.xlsx");
+    };
+  
+  
+    const exportToPDF = (data) => { 
+      const doc = new jsPDF();
+      
+      // Header text with smaller font
+      const headerText = [
+        "University of Cebu-Main",
+        "College of Computer Studies",
+        "Computer Laboratory Sitin Monitoring System Report"
+      ];
+      
+      // Add centered title with smaller font (10pt)
+      doc.setFontSize(10); // Reduced from 12
+      doc.setFont("helvetica", "bold");
+      
+      // Adjust vertical spacing (reduced from 7 to 5)
+      headerText.forEach((line, index) => {
+        doc.text(line, doc.internal.pageSize.width / 2, 15 + (index * 5), { 
+          align: "center" 
+        });
+      });
+      
+      // Prepare table data
+      const headers = [Object.keys(data[0])];
+      const rows = data.map(item => Object.values(item));
+      
+      // Add table with adjusted start position
+      autoTable(doc, {
+        head: headers,
+        body: rows,
+        startY: 30, // Reduced from 40 (less space after header)
+        styles: { 
+          fontSize: 8,
+          halign: "center"
+        },
+        headStyles: {
+          fillColor: "#2c3e50",
+          textColor: "#ffffff",
+          fontStyle: "bold",
+          fontSize: 8 // Smaller header font
+        }
+      });
+      
+      doc.save("sit-in-reports.pdf");
+    };
 
   if (loading) {
     return <div className="p-6 text-center">Loading feedbacks...</div>;
@@ -233,6 +282,7 @@ function AdminSitinfeedbacks() {
                   <th className="px-4 py-2 text-left">Name</th>
                   <th className="px-4 py-2 text-left">Lab Room</th>
                   <th className="px-4 py-2 text-left">Rating</th>
+                  <th className="px-4 py-2 text-left">Comments</th>
                   <th className="px-4 py-2 text-left">Date</th>
                   <th className="px-4 py-2 text-left">Actions</th>
                 </tr>
@@ -258,6 +308,7 @@ function AdminSitinfeedbacks() {
                           ))}
                         </div>
                       </td>
+                      <td className="px-4 py-4">{feedback.comments}</td>
                       <td className="px-4 py-4">
                         {moment(feedback.created_at).format('MMM D, YYYY')}
                       </td>

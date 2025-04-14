@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/auth-context';
 import { FiLogOut, FiSearch, FiUser, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-
+import { FiUsers} from 'react-icons/fi';
 function Navbar({ isSidebarCollapsed }) {
   const { logout, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,11 +27,23 @@ function Navbar({ isSidebarCollapsed }) {
 
   // Available labs for selection
   const availableLabs = [
-    'Lab 530A - Programming Lab',
-    'Lab 530B - Java Lab',
-    'Lab 531 - Networking Lab',
-    'Lab 532 - Multimedia Lab',
-    'Lab 533 - Research Lab'
+    'Lab 530A',
+    'Lab 530B',
+    'Lab 530C',
+    'Lab 535',
+    'Lab 536',
+    'Lab 540',
+    'Lab 517',
+    'Lab 524',
+    'Lab 544'
+  ];
+
+  const availablePurpose = [
+    'Java Programming',
+    'C# Programming',
+    'Python Programming',
+    'Php Programming',
+    'Web Design'
   ];
 
   const handleSearch = async () => {
@@ -142,23 +154,25 @@ function Navbar({ isSidebarCollapsed }) {
             {/* Search bar - only show for admin */}
             {user?.role === 'admin' && (
               <div className="relative hidden md:block">
-                <div className="flex items-center">
-                  <input
-                    type="text"
-                    placeholder="Search student by ID..."
-                    className="pl-10 pr-4 py-1 w-64 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                  <button
-                    onClick={handleSearch}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-r hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <FiSearch />
-                  </button>
-                </div>
+              <div className="flex items-center">
+                {/* Icon placed before input */}
+                <FiUsers className="absolute left-3 text-gray-500" /> {/* Positioning inside input */}
+                <input
+                  type="text"
+                  placeholder="Search student by ID..."
+                  className="pl-10 pr-4 py-1 w-64 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                />
+                <button
+                  onClick={handleSearch}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-r hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <FiSearch />
+                </button>
               </div>
+            </div>
             )}
 
             {user && (
@@ -242,14 +256,21 @@ function Navbar({ isSidebarCollapsed }) {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Purpose *</label>
-                  <input
+                  <select
                     type="text"
                     placeholder="e.g. Java Programming, Research, Thesis"
                     className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={purpose}
                     onChange={(e) => setPurpose(e.target.value)}
                     disabled={isLoading}
-                  />
+                  >
+                    <option value="">Select a Purpose</option>
+                    {availablePurpose.map((purposeOption) => (
+                      <option key={purposeOption} value={purposeOption}>
+                        {purposeOption}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
