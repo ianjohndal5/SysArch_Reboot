@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/auth-context';
 
 function History() {
     // For demo purposes - in a real app, get this from your auth system
-    const currentStudentId = 15330524; // Christian Yancha's ID
+    const { user } = useAuth();
+    const currentStudentId = user?.idno;
     
     const [historyData, setHistoryData] = useState([]);
     const [loading, setLoading] = useState(true);
