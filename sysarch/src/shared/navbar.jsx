@@ -27,21 +27,19 @@ function Navbar({ isSidebarCollapsed }) {
 
   // Available labs for selection
   const availableLabs = [
-    'Lab 530A',
-    'Lab 530B',
-    'Lab 530C',
-    'Lab 535',
-    'Lab 536',
-    'Lab 540',
-    'Lab 517',
     'Lab 524',
-    'Lab 544'
+    'Lab 526',
+    'Lab 528',
+    'Lab 530',
+    'Lab 542',
+    'Lab Mac'
   ];
 
   const availablePurpose = [
-    'Java Programming',
     'C# Programming',
-    'Python Programming',
+    'C Programming',
+    'Java Programming',
+    'Asp.Net Programming',
     'Php Programming',
     'Web Design'
   ];
