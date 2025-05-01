@@ -8,11 +8,14 @@ import Layout from './layout/layout';
 import Landing from './components/landing';
 // Admin Components
 import AdminHome from './components/admin/dashboard';
+import AdminLeaderboard from './components/admin/leaderboard';
 import AdminStudentlist from './components/admin/studentlist';
 import AdminSitins from './components/admin/sitins';
 import AdminSitinrecords from './components/admin/sitinrecords';
 import AdminSitinreports from './components/admin/sitinreports';
 import AdminSitinfeedbacks from './components/admin/sitinfeedbacks';
+import AdminLabManagement from './components/admin/labschedules';
+
 // Student Components
 import StudentHome from './components/student/dashboard';
 import StudentRuleandreg from './components/student/ruleandreg';
@@ -103,11 +106,13 @@ function App() {
               </ProtectedRoute>
             }>
               <Route index element={<AdminHome />} />
+              <Route path="leaderboard" element={<AdminLeaderboard />} />
               <Route path="student-list" element={<AdminStudentlist />} />
               <Route path="sit-ins" element={<AdminSitins />} />
               <Route path="sit-in-records" element={<AdminSitinrecords />} />
               <Route path="sit-in-reports" element={<AdminSitinreports />} />
               <Route path="sit-in-feedbacks" element={<AdminSitinfeedbacks />} />
+              <Route path="labschedules" element={<AdminLabManagement />} />
               <Route path="profile" element={<Profile />} />
             </Route>
 

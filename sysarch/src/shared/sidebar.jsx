@@ -1,39 +1,47 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/auth-context';
 import { 
   FiHome, FiUsers, FiCalendar, FiFileText, FiBarChart2, FiMessageSquare,
-  FiBook, FiBell, FiClock, FiChevronLeft, FiChevronRight 
+  FiBook, FiBell, FiClock, FiChevronLeft, FiChevronRight, FiAward
 } from 'react-icons/fi';
+import { useEffect } from 'react';
 
-function Sidebar({ isAdmin, isCollapsed, toggleCollapse }) {
+function Sidebar({ isCollapsed, toggleCollapse }) {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  if (!user) return null; // If no user is logged in, return null
+  // Redirect if no user is logged in
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
-  const expandedWidth = "250px"; // Width when expanded
-  const collapsedWidth = "80px";  // Width when collapsed
+  if (!user) return null;
+
+  // Determine admin status based on user role
+  const isAdmin = user?.role === 'admin';
+  const expandedWidth = "250px";
+  const collapsedWidth = "80px";
 
   return (
     <div 
       style={{
-        width: isCollapsed ? collapsedWidth : expandedWidth, // Dynamic width based on collapse state
-        transition: 'width 0.3s ease-in-out', // Smooth width transition
+        width: isCollapsed ? collapsedWidth : expandedWidth,
+        transition: 'width 0.3s ease-in-out',
       }}
       className="p-4 min-h-screen fixed top-0 left-0 z-20 bg-gradient-to-b from-blue-600 to-blue-700"
     >
-      {/* Collapse/Expand Button */}
       <button 
-        onClick={toggleCollapse} // Notify parent component of collapse toggle
+        onClick={toggleCollapse}
         className="absolute -right-3 top-20 bg-white p-1 rounded-full shadow-md hover:bg-gray-100 transition-colors"
       >
         {isCollapsed ? <FiChevronRight className="text-blue-600" /> : <FiChevronLeft className="text-blue-600" />}
       </button>
 
-      {/* Sidebar Content */}
       <div className="overflow-hidden">
-        {/* Admin Content */}
-        {isAdmin && (
+      {isAdmin ? (
           <ul className="flex flex-col space-y-2">
             <SidebarItem 
               to="/admin" 
@@ -48,6 +56,13 @@ function Sidebar({ isAdmin, isCollapsed, toggleCollapse }) {
               label="Student Management"
               isCollapsed={isCollapsed}
               isActive={location.pathname === '/admin/student-list'}
+            />
+            <SidebarItem 
+              to="/admin/leaderboard" 
+              icon={<FiAward />}
+              label="Leaderboard"
+              isCollapsed={isCollapsed}
+              isActive={location.pathname.startsWith('/admin/leaderboard')}
             />
             <SidebarItem 
               to="/admin/sit-ins"      
@@ -77,11 +92,15 @@ function Sidebar({ isAdmin, isCollapsed, toggleCollapse }) {
               isCollapsed={isCollapsed}
               isActive={location.pathname === '/admin/sit-in-feedbacks'}
             />
+            <SidebarItem 
+              to="/admin/labschedules" 
+              icon={<FiClock />}
+              label="Lab Schedules"
+              isCollapsed={isCollapsed}
+              isActive={location.pathname === '/admin/labschedules'}
+            />
           </ul>
-        )}
-
-        {/* Student Content */}
-        {!isAdmin && (
+        ) : (
           <ul className="flex flex-col space-y-2">
             <SidebarItem 
               to="/student" 
@@ -118,7 +137,6 @@ function Sidebar({ isAdmin, isCollapsed, toggleCollapse }) {
   );
 }
 
-// Reusable Sidebar Item Component
 function SidebarItem({ to, icon, label, isCollapsed, isActive }) {
   return (
     <li>

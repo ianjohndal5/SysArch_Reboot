@@ -94,10 +94,24 @@ function Studentlist() {
 
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData({
-      ...editFormData,
-      [name]: value
-    });
+    
+    // Special handling for session field
+    if (name === 'session') {
+      let numValue = parseInt(value) || 0;
+      numValue = Math.max(0, numValue);  // Minimum 0
+      numValue = Math.min(30, numValue); // Maximum 30
+      
+      setEditFormData({
+        ...editFormData,
+        [name]: numValue
+      });
+    } else {
+      // Regular handling for other fields
+      setEditFormData({
+        ...editFormData,
+        [name]: value
+      });
+    }
   };
 
   const handleCancelEdit = () => {
@@ -302,8 +316,9 @@ function Studentlist() {
                   {/* Editable Name */}
                   {editingId === student.idno ? (
                     <>
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="py-4 whitespace-nowrap">
                         <div className="flex flex-col space-y-2">
+                          <label for="lastname" className="text-xs text-left">Lastname</label>
                           <input
                             type="text"
                             name="lastname"
@@ -312,6 +327,7 @@ function Studentlist() {
                             className="text-sm border rounded px-2 py-1 w-full"
                             placeholder="Lastname"
                           />
+                          <label for="lastname" className="text-xs text-left">Firstname</label>
                           <input
                             type="text"
                             name="firstname"
@@ -320,6 +336,7 @@ function Studentlist() {
                             className="text-sm border rounded px-2 py-1 w-full"
                             placeholder="Firstname"
                           />
+                          <label for="middlename" className="text-xs text-left">Middlename</label>
                           <input
                             type="text"
                             name="middlename"
@@ -330,7 +347,7 @@ function Studentlist() {
                           />
                         </div>
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="py-4 whitespace-nowrap">
                         <input
                           type="text"
                           name="course"
@@ -339,7 +356,7 @@ function Studentlist() {
                           className="text-sm border rounded px-2 py-1 w-full"
                         />
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="py-4 whitespace-nowrap">
                         <input
                           type="text"
                           name="level"
@@ -348,7 +365,7 @@ function Studentlist() {
                           className="text-sm border rounded px-2 py-1 w-full"
                         />
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="py-4 whitespace-nowrap">
                         <input
                           type="text"
                           name="email"
@@ -357,7 +374,7 @@ function Studentlist() {
                           className="text-sm border rounded px-2 py-1 w-full"
                         />
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="py-4 whitespace-nowrap">
                         <input
                           type="text"
                           name="username"
@@ -366,16 +383,18 @@ function Studentlist() {
                           className="text-sm border rounded px-2 py-1 w-full"
                         />
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="py-4 whitespace-nowrap text-sm text-gray-500">
                         <input
                           type="number"
                           name="session"
+                          min="0"
+                          max="30"
                           value={editFormData.session}
                           onChange={handleEditFormChange}
                           className="text-sm border rounded px-2 py-1 w-full"
                         />
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="py-4 whitespace-nowrap">
                         <input
                           type="text"
                           name="address"
@@ -384,7 +403,7 @@ function Studentlist() {
                           className="text-sm border rounded px-2 py-1 w-full"
                         />
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleSaveEdit(student.idno)}
@@ -405,16 +424,16 @@ function Studentlist() {
                     </>
                   ) : (
                     <>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
                         {student.lastname}, {student.firstname} {student.middlename}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{student.course}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{student.level}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{student.email}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{student.username}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{student.session}</td>
-                      <td className="px-4 py-4 text-sm text-gray-500 max-w-xs truncate">{student.address}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{student.course}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{student.level}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{student.email}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{student.username}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{student.session}</td>
+                      <td className="px-2 py-4 text-sm text-gray-500 max-w-xs truncate">{student.address}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditClick(student)}

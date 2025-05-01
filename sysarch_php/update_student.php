@@ -20,7 +20,7 @@ try {
         throw new Exception('Invalid JSON input');
     }
 
-    $requiredFields = ['idno', 'firstname', 'lastname', 'course', 'level', 'email', 'username', 'session'];
+    $requiredFields = ['idno', 'firstname', 'lastname', 'course', 'level', 'email', 'username'];
     foreach ($requiredFields as $field) {
         if (empty($data[$field])) {
             throw new Exception("Missing required field: $field");

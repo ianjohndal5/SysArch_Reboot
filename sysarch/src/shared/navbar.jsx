@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/auth-context';
 import { FiLogOut, FiSearch, FiUser, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ function Navbar({ isSidebarCollapsed }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
+  const [availableLabs, setAvailableLabs] = useState([]);
 
   const leftSectionMarginLeft = isSidebarCollapsed ? '80px' : '250px';
   const userLogo = user?.role === 'student' ? 'S' : 'A';
@@ -24,16 +24,21 @@ function Navbar({ isSidebarCollapsed }) {
     navigate(`${basePath}/profile`);
   };
   
-
-  // Available labs for selection
-  const availableLabs = [
-    'Lab 524',
-    'Lab 526',
-    'Lab 528',
-    'Lab 530',
-    'Lab 542',
-    'Lab Mac'
-  ];
+  useEffect(() => {
+    const fetchLabs = async () => {
+      try {
+        const response = await fetch('http://localhost/sysarch_reboot/sysarch_php/labs.php');
+        const data = await response.json();
+        if (data.success) {
+          setAvailableLabs(data.data.map(lab => lab.lab_name));
+        }
+      } catch (error) {
+        console.error('Failed to fetch labs:', error);
+      }
+    };
+    
+    fetchLabs();
+  }, []);
 
   const availablePurpose = [
     'C# Programming',
@@ -85,10 +90,10 @@ function Navbar({ isSidebarCollapsed }) {
       setError('Please fill in both purpose and lab fields');
       return;
     }
-    
+  
     setIsLoading(true);
     setError('');
-    
+  
     try {
       const response = await fetch('http://localhost/sysarch_reboot/sysarch_php/sit-in.php', {
         method: 'POST',
@@ -103,27 +108,51 @@ function Navbar({ isSidebarCollapsed }) {
           labroom: lab
         })
       });
-      
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
+  
       const data = await response.json();
       
-      if (!data.success) {
+      // Handle non-OK responses first
+      if (!response.ok) {
+        // Check for specific error types from backend
+        if (data.error && data.error.includes('already sitting')) {
+          throw new Error('STUDENT_ALREADY_SITTING');
+        } else if (data.error && data.error.includes('No remaining sessions')) {
+          throw new Error('NO_REMAINING_SESSIONS');
+        } else {
+          throw new Error(data.error || 'Failed to record sit-in');
+        }
+      }
+  
+      // Handle success case
+      if (data.success) {
+        alert(`Sit-in recorded successfully for ${searchResults.name}`);
+        setShowModal(false);
+        setPurpose('');
+        setLab('');
+      } else {
         throw new Error(data.error || 'Failed to record sit-in');
       }
-      
-      alert(`Sit-in recorded successfully for ${searchResults.name}`);
-      setShowModal(false);
-      setPurpose('');
-      setLab('');
     } catch (err) {
-      setError(err.message);
+      // Handle different error types with specific messages
+      switch (err.message) {
+        case 'STUDENT_ALREADY_SITTING':
+          setError('This student is already sitting in another lab');
+          break;
+        case 'NO_REMAINING_SESSIONS':
+          setError('Student has no remaining sessions available');
+          break;
+        default:
+          setError(err.message || 'An unexpected error occurred');
+      }
+      
+      // For debugging purposes
+      console.error('Sit-in error:', err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  
 
   return (
     <>

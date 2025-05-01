@@ -8,13 +8,15 @@ import {
   FiFilter,
   FiArrowUp,
   FiArrowDown,
-  FiLoader
+  FiLoader,
+  FiAward
 } from 'react-icons/fi';
 
 function Sitins() {
   const [sitInsData, setSitInsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [rewardLoading, setRewardLoading] = useState({});
   
   // State for filtering, sorting, and pagination
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,34 +27,38 @@ function Sitins() {
     key: 'login_time', 
     direction: 'asc' 
   });
+  
+  // State for reward notification
+  const [rewardNotification, setRewardNotification] = useState(null);
 
   const itemsPerPage = 10;
 
   // Fetch data from API
   useEffect(() => {
-    const fetchSitIns = async () => {
-      try {
-        const response = await fetch('http://localhost/sysarch_reboot/sysarch_php/sitins.php');
-        if (!response.ok) {
-          throw new Error('Failed to fetch sit-ins data');
-        }
-        const result = await response.json();
-        
-        if (result.success && Array.isArray(result.data)) {
-          setSitInsData(result.data);
-        } else {
-          throw new Error(result.error || 'Invalid data format');
-        }
-      } catch (err) {
-        setError(err.message);
-        setSitInsData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSitIns();
   }, []);
+  
+  const fetchSitIns = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost/sysarch_reboot/sysarch_php/sitins.php');
+      if (!response.ok) {
+        throw new Error('Failed to fetch sit-ins data');
+      }
+      const result = await response.json();
+      
+      if (result.success && Array.isArray(result.data)) {
+        setSitInsData(result.data);
+      } else {
+        throw new Error(result.error || 'Invalid data format');
+      }
+    } catch (err) {
+      setError(err.message);
+      setSitInsData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Request sort
   const requestSort = (key) => {
@@ -101,7 +107,6 @@ function Sitins() {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-
   // Action handlers
   const handleNotify = (sitId) => {
     alert(`Notification sent for sit-in ${sitId}`);
@@ -145,54 +150,63 @@ function Sitins() {
             throw new Error(result.error || 'Failed to update records');
         }
 
-        // Refresh the sit-ins list with error handling
-        try {
-            console.log('Refreshing sit-ins list...'); // Debug log
-            const fetchResponse = await fetch('http://localhost/sysarch_reboot/sysarch_php/sitins.php');
-            
-            if (!fetchResponse.ok) {
-                throw new Error('Failed to fetch updated sit-ins');
-            }
-
-            const fetchResult = await fetchResponse.json();
-            console.log('Refresh response:', fetchResult); // Debug log
-
-            if (!fetchResult.success || !Array.isArray(fetchResult.data)) {
-                throw new Error('Invalid data received from server');
-            }
-
-            setSitInsData(fetchResult.data);
-            alert('Student timed out successfully');
-            
-        } catch (refreshError) {
-            console.error('Refresh error:', refreshError);
-            // Even if refresh fails, the timeout was successful
-            alert('Student was timed out, but could not refresh the list. Please reload the page.');
-        }
+        // Refresh the sit-ins list
+        await fetchSitIns();
+        alert('Student timed out successfully');
 
     } catch (err) {
         console.error('Timeout error:', err);
         alert(`Error: ${err.message}`);
-        
-        // Additional error reporting (optional)
-        try {
-            await fetch('/error-log', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    error: err.message,
-                    stack: err.stack,
-                    timestamp: new Date().toISOString(),
-                    action: 'student_timeout'
-                })
-            });
-        } catch (loggingError) {
-            console.error('Failed to log error:', loggingError);
-        }
     }
-};
+  };
+
+  // New function to handle rewarding a student
+  const handleRewardStudent = async (sitId, idno, studentName) => {
+    try {
+        // Set loading state for this specific student
+        setRewardLoading(prev => ({ ...prev, [sitId]: true }));
+        
+        const response = await fetch('http://localhost/sysarch_reboot/sysarch_php/reward_student.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                sit_id: sitId,
+                idno: idno
+            })
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to reward student');
+        }
+
+        // Show reward notification
+        setRewardNotification({
+            studentName,
+            pointsAdded: result.data.points_added,
+            additionalSessions: result.data.additional_sessions,
+            newPoints: result.data.new_points,
+            timestamp: new Date()
+        });
+        
+        // Hide notification after 5 seconds
+        setTimeout(() => {
+            setRewardNotification(null);
+        }, 5000);
+
+        // No need to refresh data as we're not changing the sit-in display
+
+    } catch (err) {
+        console.error('Reward error:', err);
+        alert(`Error: ${err.message}`);
+    } finally {
+        // Clear loading state for this specific student
+        setRewardLoading(prev => ({ ...prev, [sitId]: false }));
+    }
+  };
 
   if (loading) {
     return (
@@ -214,6 +228,24 @@ function Sitins() {
   return (
     <div className="bg-gray-50 p-6 h-full">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Current Sit-Ins</h1>
+      
+      {/* Reward Notification */}
+      {rewardNotification && (
+        <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-md text-green-800 flex items-center justify-between">
+          <div>
+            <span className="font-medium">{rewardNotification.studentName}</span> rewarded with <span className="font-medium">1 point</span>! 
+            {rewardNotification.additionalSessions > 0 && (
+              <span> Additionally gained <span className="font-medium">1 session</span> for reaching {rewardNotification.newPoints} points!</span>
+            )}
+          </div>
+          <button 
+            onClick={() => setRewardNotification(null)} 
+            className="text-green-700 hover:text-green-900"
+          >
+            &times;
+          </button>
+        </div>
+      )}
       
       {/* Filters and Search */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -316,8 +348,6 @@ function Sitins() {
           <tbody className="bg-white divide-y divide-gray-200">
             {currentSitIns.length > 0 ? (
               currentSitIns.map((sitIn) => {
-              
-                
                 return (
                   <tr key={sitIn.sit_id} className="hover:bg-gray-50">
                     <td className="px-3 py-4 whitespace-nowrap text-xs font-medium text-gray-900">{sitIn.idno}</td>
@@ -350,6 +380,18 @@ function Sitins() {
                           title="Logout Student"
                         >
                           <FiClock />
+                        </button>
+                        <button
+                          onClick={() => handleRewardStudent(sitIn.sit_id, sitIn.idno, sitIn.name)}
+                          className="p-1 text-yellow-500 hover:text-yellow-700"
+                          title="Reward Student"
+                          disabled={rewardLoading[sitIn.sit_id]}
+                        >
+                          {rewardLoading[sitIn.sit_id] ? (
+                            <FiLoader className="animate-spin" />
+                          ) : (
+                            <FiAward />
+                          )}
                         </button>
                       </div>
                     </td>
