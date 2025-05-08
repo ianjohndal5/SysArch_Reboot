@@ -15,12 +15,19 @@ import AdminSitinrecords from './components/admin/sitinrecords';
 import AdminSitinreports from './components/admin/sitinreports';
 import AdminSitinfeedbacks from './components/admin/sitinfeedbacks';
 import AdminLabManagement from './components/admin/labschedules';
+import AdminResources from './components/admin/resources';
+import AdminEditResource from './components/admin/modals/resourceeditmodal';
+import AdminUploadResource from './components/admin/modals/resourceuploadmodal';
+import AdminComputerManagement from './components/admin/computermanagement';
+import AdminReservationRequest from './components/admin/reservationrequest';
 
 // Student Components
 import StudentHome from './components/student/dashboard';
 import StudentRuleandreg from './components/student/ruleandreg';
 import StudentAnnouncement from './components/student/announcements';
 import StudentHistory from './components/student/history';
+import StudentResources from './components/student/resources';
+import StudentReservation from './components/student/reservation';
 // Shared Components
 import Profile from './shared/profile';
 import { useEffect } from 'react';
@@ -96,6 +103,8 @@ function App() {
               <Route path="rules-regulations" element={<StudentRuleandreg />} />
               <Route path="announcements" element={<StudentAnnouncement />} />
               <Route path="history" element={<StudentHistory />} />
+              <Route path="resources" element={<StudentResources />} />
+              <Route path="reservation" element={<StudentReservation />} />
               <Route path="profile" element={<Profile />} />
             </Route>
 
@@ -113,6 +122,11 @@ function App() {
               <Route path="sit-in-reports" element={<AdminSitinreports />} />
               <Route path="sit-in-feedbacks" element={<AdminSitinfeedbacks />} />
               <Route path="labschedules" element={<AdminLabManagement />} />
+              <Route path="resources" element={<AdminResources />} />
+                <Route path="editresource" element={<AdminEditResource />} />
+                <Route path="uploadresource" element={<AdminUploadResource />} />
+              <Route path="computermanagement" element={<AdminComputerManagement />} />
+              <Route path="reservationrequest" element={<AdminReservationRequest />} />
               <Route path="profile" element={<Profile />} />
             </Route>
 
