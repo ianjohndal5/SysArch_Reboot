@@ -5,7 +5,7 @@ import {
   FiHome, FiUsers, FiCalendar, FiFileText, FiBarChart2, FiMessageSquare,
   FiBook, FiBell, FiClock, FiChevronLeft, FiChevronRight, FiAward, FiBookOpen,
   FiChevronDown, FiMonitor, FiList, FiCpu, FiArchive, FiDatabase, FiServer,
-  FiLayout, FiClipboard
+  FiLayout, FiClipboard, FiActivity
 } from 'react-icons/fi';
 import { useEffect } from 'react';
 
@@ -27,7 +27,8 @@ function Sidebar({ isCollapsed, toggleCollapse }) {
   const isLabManagementActive = 
     location.pathname === '/admin/labschedules' || 
     location.pathname === '/admin/computermanagement' || 
-    location.pathname === '/admin/reservationrequest';
+    location.pathname === '/admin/reservationrequest' ||
+    location.pathname === '/admin/activity-logs';
 
   // Automatically open dropdowns if on a related page
   useEffect(() => {
@@ -208,6 +209,13 @@ function Sidebar({ isCollapsed, toggleCollapse }) {
                     label="Reservation Request"
                     isCollapsed={isCollapsed}
                     isActive={location.pathname === '/admin/reservationrequest'}
+                  />
+                  <DropdownItem 
+                    to="/admin/activity-logs"
+                    icon={<FiActivity />}
+                    label="Activity Logs"
+                    isCollapsed={isCollapsed}
+                    isActive={location.pathname === '/admin/activity-logs'}
                   />
                 </ul>
               )}

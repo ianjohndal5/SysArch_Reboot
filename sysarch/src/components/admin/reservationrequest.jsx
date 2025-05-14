@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/auth-context';
 import { 
   FiCheck, 
   FiX, 
@@ -17,6 +18,7 @@ import {
 } from 'react-icons/fi';
 
 function AdminReservationRequest() {
+  const { user } = useAuth();
   // State for reservations
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -161,11 +163,49 @@ function AdminReservationRequest() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  // Update logAction function
+  const logAction = async (actionType, reservationId, userId, details) => {
+    try {
+      const response = await fetch('http://localhost/sysarch_reboot/sysarch_php/activity_logs.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reservation_id: reservationId,
+          user_id: userId,
+          action_type: actionType,
+          action_details: details,
+          performed_by: user.idno,
+          performed_by_role: 'admin',
+          old_status: 'pending',
+          new_status: actionType === 'approved' ? 'approved' : 'rejected'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to log action');
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to log action');
+      }
+    } catch (err) {
+      console.error('Error logging action:', err);
+    }
+  };
+
   // Handle reservation approval
   const handleApprove = async (reservationId) => {
     try {
       setActionInProgress(reservationId);
       
+      // Get reservation details first
+      const reservationResponse = await fetch(`http://localhost/sysarch_reboot/sysarch_php/reservations.php?reservation_id=${reservationId}`);
+      const reservationResult = await reservationResponse.json();
+      const reservationDetails = reservationResult.data[0];
+
       // Update reservation status to approved
       const response = await fetch('http://localhost/sysarch_reboot/sysarch_php/reservations.php', {
         method: 'PUT',
@@ -188,26 +228,17 @@ function AdminReservationRequest() {
       if (!result.success) {
         throw new Error(result.error || 'Failed to approve reservation');
       }
+
+      // Log the approval action
+      await logAction(
+        'approved',
+        reservationId,
+        reservationDetails.idno,
+        `Reservation approved for ${reservationDetails.firstname} ${reservationDetails.lastname}. Lab: ${reservationDetails.lab_name}, Computer: ${reservationDetails.computer_name}, Date: ${reservationDetails.reservation_date}, Time: ${reservationDetails.time_in}. Admin Notes: ${adminNotes || 'None'}`
+      );
       
       // Update computer status to 'in_use' for the reserved time
       // You'll need to implement this endpoint in your PHP backend
-      const reservationDetails = result.data;
-      
-      const computerUpdateResponse = await fetch('http://localhost/sysarch_reboot/sysarch_php/update_computer_status.php', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          computer_id: reservationDetails.computer_id,
-          status: 'in_use',
-          notes: `Reserved by ${reservationDetails.firstname} ${reservationDetails.lastname} (${reservationDetails.idno}) for ${reservationDetails.duration} hour(s) on ${reservationDetails.reservation_date} at ${reservationDetails.time_in}`
-        })
-      });
-      
-      if (!computerUpdateResponse.ok) {
-        throw new Error('Failed to update computer status');
-      }
       
       // Refresh reservations list
       fetchReservations();
@@ -220,7 +251,7 @@ function AdminReservationRequest() {
       
     } catch (err) {
       console.error('Error approving reservation:', err);
-      alert(`Error: ${err.message}`);
+      alert(err.message || 'Failed to approve reservation');
     } finally {
       setActionInProgress(null);
     }
@@ -231,6 +262,11 @@ function AdminReservationRequest() {
     try {
       setActionInProgress(reservationId);
       
+      // Get reservation details first
+      const reservationResponse = await fetch(`http://localhost/sysarch_reboot/sysarch_php/reservations.php?reservation_id=${reservationId}`);
+      const reservationResult = await reservationResponse.json();
+      const reservationDetails = reservationResult.data[0];
+
       // Update reservation status to rejected
       const response = await fetch('http://localhost/sysarch_reboot/sysarch_php/reservations.php', {
         method: 'PUT',
@@ -253,6 +289,14 @@ function AdminReservationRequest() {
       if (!result.success) {
         throw new Error(result.error || 'Failed to reject reservation');
       }
+
+      // Log the rejection action
+      await logAction(
+        'rejected',
+        reservationId,
+        reservationDetails.idno,
+        `Reservation rejected for ${reservationDetails.firstname} ${reservationDetails.lastname}. Lab: ${reservationDetails.lab_name}, Computer: ${reservationDetails.computer_name}, Date: ${reservationDetails.reservation_date}, Time: ${reservationDetails.time_in}. Admin Notes: ${adminNotes || 'None'}`
+      );
       
       // Refresh reservations list
       fetchReservations();
@@ -265,7 +309,7 @@ function AdminReservationRequest() {
       
     } catch (err) {
       console.error('Error rejecting reservation:', err);
-      alert(`Error: ${err.message}`);
+      alert(err.message || 'Failed to reject reservation');
     } finally {
       setActionInProgress(null);
     }

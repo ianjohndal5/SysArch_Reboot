@@ -20,6 +20,7 @@ import AdminEditResource from './components/admin/modals/resourceeditmodal';
 import AdminUploadResource from './components/admin/modals/resourceuploadmodal';
 import AdminComputerManagement from './components/admin/computermanagement';
 import AdminReservationRequest from './components/admin/reservationrequest';
+import ActivityLogs from './components/admin/ActivityLogs';
 
 // Student Components
 import StudentHome from './components/student/dashboard';
@@ -122,11 +123,12 @@ function App() {
               <Route path="sit-in-reports" element={<AdminSitinreports />} />
               <Route path="sit-in-feedbacks" element={<AdminSitinfeedbacks />} />
               <Route path="labschedules" element={<AdminLabManagement />} />
-              <Route path="resources" element={<AdminResources />} />
-                <Route path="editresource" element={<AdminEditResource />} />
-                <Route path="uploadresource" element={<AdminUploadResource />} />
               <Route path="computermanagement" element={<AdminComputerManagement />} />
               <Route path="reservationrequest" element={<AdminReservationRequest />} />
+              <Route path="activity-logs" element={<ActivityLogs />} />
+              <Route path="resources" element={<AdminResources />} />
+              <Route path="editresource" element={<AdminEditResource />} />
+              <Route path="uploadresource" element={<AdminUploadResource />} />
               <Route path="profile" element={<Profile />} />
             </Route>
 
